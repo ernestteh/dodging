@@ -1,3 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Khue Dodge Game</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<style>
+body {
+  background: #f5f5f5;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 10px;
+}
+
+canvas {
+  background: white;
+  border: 3px solid #222;
+}
+
+#score {
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+#controls {
+  margin-top: 15px;
+  display: flex;
+  gap: 20px;
+}
+
+button {
+  font-size: 24px;
+  padding: 15px 25px;
+  border-radius: 12px;
+  border: none;
+  background: #222;
+  color: white;
+}
+
+#restartBtn {
+  margin-top: 15px;
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<h2>⭐ Khue Dodge Game ⭐</h2>
+
+<canvas id="gameCanvas" width="360" height="500"></canvas>
+
+<div id="score">Score: 0 | High Score: 0</div>
+
+<div id="controls">
+  <button id="leftBtn">⬅️</button>
+  <button id="rightBtn">➡️</button>
+</div>
+
+<button id="restartBtn">Restart</button>
+
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -17,8 +83,7 @@ villainImgs[1].img.src = "evilsantandermanager.png";
 villainImgs[2].img.src = "mkgremlin.png";
 
 // ---------- PLAYER ----------
-let basePlayerSpeed = 5;
-
+const basePlayerSpeed = 5;
 const player = {
   x: canvas.width / 2 - 25,
   y: canvas.height - 70,
@@ -36,25 +101,18 @@ let moveRight = false;
 
 // ---------- HIGH SCORE ----------
 let highScore = localStorage.getItem("khueHighScore") || 0;
-
-// ---------- UI ----------
 const scoreEl = document.getElementById("score");
 scoreEl.innerText = `Score: 0 | High Score: ${highScore}`;
 
 // ---------- BUTTON CONTROLS ----------
-document.getElementById("leftBtn").ontouchstart =
-document.getElementById("leftBtn").onmousedown = () => moveLeft = true;
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
 
-document.getElementById("leftBtn").ontouchend =
-document.getElementById("leftBtn").onmouseup =
-document.getElementById("leftBtn").onmouseleave = () => moveLeft = false;
+leftBtn.ontouchstart = leftBtn.onmousedown = () => moveLeft = true;
+leftBtn.ontouchend = leftBtn.onmouseup = leftBtn.onmouseleave = () => moveLeft = false;
 
-document.getElementById("rightBtn").ontouchstart =
-document.getElementById("rightBtn").onmousedown = () => moveRight = true;
-
-document.getElementById("rightBtn").ontouchend =
-document.getElementById("rightBtn").onmouseup =
-document.getElementById("rightBtn").onmouseleave = () => moveRight = false;
+rightBtn.ontouchstart = rightBtn.onmousedown = () => moveRight = true;
+rightBtn.ontouchend = rightBtn.onmouseup = rightBtn.onmouseleave = () => moveRight = false;
 
 // ---------- DIFFICULTY ----------
 let baseVillainSpeed = 2;
@@ -82,20 +140,17 @@ function loop() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Player movement
   if (moveLeft) player.x -= player.speed;
   if (moveRight) player.x += player.speed;
 
   player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
 
-  // Draw player
   ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
 
   villains.forEach((v, i) => {
     v.y += v.speed;
     ctx.drawImage(v.img, v.x, v.y, v.size, v.size);
 
-    // Collision
     if (
       v.x < player.x + player.width &&
       v.x + v.size > player.x &&
@@ -105,12 +160,10 @@ function loop() {
       endGame();
     }
 
-    // Passed villain
     if (v.y > canvas.height) {
       villains.splice(i, 1);
       score++;
 
-      // ---------- DIFFICULTY INCREASE ----------
       if (score % 10 === 0) {
         baseVillainSpeed += 0.3;
         player.speed += 0.2;
@@ -156,3 +209,6 @@ document.getElementById("restartBtn").onclick = () => {
 // ---------- START ----------
 loop();
 </script>
+
+</body>
+</html>
