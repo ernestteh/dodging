@@ -1,65 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Khue Dodge Game</title>
+  <meta charset="UTF-8">
+  <title>Khue Dodge Game</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <!-- iPhone / mobile safety -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-<style>
-body {
-  background: #f5f5f5;
-  font-family: Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0;
-  padding: 10px;
-}
+  <style>
+    body {
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 10px;
+    }
 
-canvas {
-  background: white;
-  border: 3px solid #222;
-}
+    canvas {
+      background: white;
+      border: 3px solid #222;
+      margin-top: 10px;
+      touch-action: none;
+    }
 
-#score {
-  margin-top: 10px;
-  font-size: 18px;
-}
+    #controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 20px;
+    }
 
-#controls {
-  margin-top: 15px;
-  display: flex;
-  gap: 20px;
-}
+    .btn {
+      font-size: 24px;
+      padding: 15px 25px;
+      border-radius: 12px;
+      border: none;
+      background: #222;
+      color: white;
+    }
 
-button {
-  font-size: 24px;
-  padding: 15px 25px;
-  border-radius: 12px;
-  border: none;
-  background: #222;
-  color: white;
-}
+    #score, #highScore {
+      margin-top: 8px;
+      font-size: 18px;
+    }
 
-#restartBtn {
-  margin-top: 15px;
-  display: none;
-}
-</style>
+    #restartBtn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 18px;
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>⭐ Khue Dodge Game ⭐</h2>
+<h2>Khue Dodge Game</h2>
 
 <canvas id="gameCanvas" width="360" height="500"></canvas>
 
-<div id="score">Score: 0 | High Score: 0</div>
+<div id="score">Score: 0</div>
+<div id="highScore">High Score: 0</div>
 
 <div id="controls">
-  <button id="leftBtn">⬅️</button>
-  <button id="rightBtn">➡️</button>
+  <button class="btn" id="leftBtn">⬅️</button>
+  <button class="btn" id="rightBtn">➡️</button>
 </div>
 
 <button id="restartBtn">Restart</button>
@@ -83,13 +89,12 @@ villainImgs[1].img.src = "evilsantandermanager.png";
 villainImgs[2].img.src = "mkgremlin.png";
 
 // ---------- PLAYER ----------
-const basePlayerSpeed = 5;
 const player = {
   x: canvas.width / 2 - 25,
   y: canvas.height - 70,
   width: 50,
   height: 50,
-  speed: basePlayerSpeed
+  speed: 5
 };
 
 // ---------- GAME STATE ----------
@@ -99,23 +104,28 @@ let gameRunning = true;
 let moveLeft = false;
 let moveRight = false;
 
-// ---------- HIGH SCORE ----------
+// Difficulty
+let difficultyLevel = 0;
+const speedIncreasePerLevel = 0.6;
+
+// High Score
 let highScore = localStorage.getItem("khueHighScore") || 0;
-const scoreEl = document.getElementById("score");
-scoreEl.innerText = `Score: 0 | High Score: ${highScore}`;
+document.getElementById("highScore").innerText = "High Score: " + highScore;
 
 // ---------- BUTTON CONTROLS ----------
-const leftBtn = document.getElementById("leftBtn");
-const rightBtn = document.getElementById("rightBtn");
+document.getElementById("leftBtn").ontouchstart =
+document.getElementById("leftBtn").onmousedown = () => moveLeft = true;
 
-leftBtn.ontouchstart = leftBtn.onmousedown = () => moveLeft = true;
-leftBtn.ontouchend = leftBtn.onmouseup = leftBtn.onmouseleave = () => moveLeft = false;
+document.getElementById("leftBtn").ontouchend =
+document.getElementById("leftBtn").onmouseup =
+document.getElementById("leftBtn").onmouseleave = () => moveLeft = false;
 
-rightBtn.ontouchstart = rightBtn.onmousedown = () => moveRight = true;
-rightBtn.ontouchend = rightBtn.onmouseup = rightBtn.onmouseleave = () => moveRight = false;
+document.getElementById("rightBtn").ontouchstart =
+document.getElementById("rightBtn").onmousedown = () => moveRight = true;
 
-// ---------- DIFFICULTY ----------
-let baseVillainSpeed = 2;
+document.getElementById("rightBtn").ontouchend =
+document.getElementById("rightBtn").onmouseup =
+document.getElementById("rightBtn").onmouseleave = () => moveRight = false;
 
 // ---------- SPAWN VILLAINS ----------
 function spawnVillain() {
@@ -126,7 +136,7 @@ function spawnVillain() {
     y: -type.size,
     size: type.size,
     img: type.img,
-    speed: baseVillainSpeed + Math.random()
+    speed: 2 + Math.random() * 1.5 + (difficultyLevel * speedIncreasePerLevel)
   });
 }
 
@@ -140,17 +150,21 @@ function loop() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Player movement
   if (moveLeft) player.x -= player.speed;
   if (moveRight) player.x += player.speed;
 
-  player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+  player.x = Math.max(0, Math.min(canvas.width - player.width, player.x)));
 
+  // Draw player
   ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
 
+  // Villains
   villains.forEach((v, i) => {
     v.y += v.speed;
     ctx.drawImage(v.img, v.x, v.y, v.size, v.size);
 
+    // Collision
     if (
       v.x < player.x + player.width &&
       v.x + v.size > player.x &&
@@ -160,16 +174,17 @@ function loop() {
       endGame();
     }
 
+    // Off-screen
     if (v.y > canvas.height) {
       villains.splice(i, 1);
       score++;
 
+      // Increase difficulty every 10 points
       if (score % 10 === 0) {
-        baseVillainSpeed += 0.3;
-        player.speed += 0.2;
+        difficultyLevel++;
       }
 
-      scoreEl.innerText = `Score: ${score} | High Score: ${highScore}`;
+      document.getElementById("score").innerText = "Score: " + score;
     }
   });
 
@@ -179,13 +194,13 @@ function loop() {
 // ---------- GAME OVER ----------
 function endGame() {
   gameRunning = false;
+  document.getElementById("restartBtn").style.display = "block";
 
   if (score > highScore) {
     highScore = score;
     localStorage.setItem("khueHighScore", highScore);
+    document.getElementById("highScore").innerText = "High Score: " + highScore;
   }
-
-  document.getElementById("restartBtn").style.display = "block";
 
   ctx.fillStyle = "black";
   ctx.font = "28px Arial";
@@ -196,11 +211,10 @@ function endGame() {
 document.getElementById("restartBtn").onclick = () => {
   villains = [];
   score = 0;
-  baseVillainSpeed = 2;
-  player.speed = basePlayerSpeed;
+  difficultyLevel = 0;
   gameRunning = true;
 
-  scoreEl.innerText = `Score: 0 | High Score: ${highScore}`;
+  document.getElementById("score").innerText = "Score: 0";
   document.getElementById("restartBtn").style.display = "none";
 
   loop();
