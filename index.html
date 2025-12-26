@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Khue Dodge Game</title>
 
-  <!-- iPhone / mobile safety -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
   <style>
@@ -56,7 +55,7 @@
 
 <body>
 
-<h2>Khue Dodge Game</h2>
+<h2>⭐ Khue Dodge Game ⭐</h2>
 
 <canvas id="gameCanvas" width="360" height="500"></canvas>
 
@@ -74,19 +73,44 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// ---------- IMAGES ----------
-const playerImg = new Image();
-playerImg.src = "khue.png";
+// ---------- IMAGE LOADING ----------
+let imagesLoaded = 0;
 
-const villainImgs = [
-  { img: new Image(), size: 40 },
-  { img: new Image(), size: 44 },
-  { img: new Image(), size: 36 }
+// ---------- VILLAIN LIST ----------
+const villainData = [
+  { src: "corncakeking.png", size: 42 },
+  { src: "indecisiveimp.png", size: 36 },
+  { src: "fartmonster.png", size: 44 },
+  { src: "doomscrolldemon.png", size: 46 },
+  { src: "cow.png", size: 40 },
+  { src: "mkgremlin.png", size: 34 },
+  { src: "evilsantandermanager.png", size: 44 },
+  { src: "snifflemonster.png", size: 38 },
+  { src: "stomachpainghoul.png", size: 42 },
+  { src: "caffeinequeen.png", size: 40 }
 ];
 
-villainImgs[0].img.src = "snifflemonster.png";
-villainImgs[1].img.src = "evilsantandermanager.png";
-villainImgs[2].img.src = "mkgremlin.png";
+const totalImages = villainData.length + 1;
+
+function imageLoaded() {
+  imagesLoaded++;
+  if (imagesLoaded === totalImages) {
+    loop();
+  }
+}
+
+// ---------- PLAYER IMAGE ----------
+const playerImg = new Image();
+playerImg.src = "khue.png";
+playerImg.onload = imageLoaded;
+
+// ---------- LOAD VILLAINS ----------
+const villainImgs = villainData.map(v => {
+  const img = new Image();
+  img.src = v.src;
+  img.onload = imageLoaded;
+  return { img, size: v.size };
+});
 
 // ---------- PLAYER ----------
 const player = {
@@ -108,11 +132,11 @@ let moveRight = false;
 let difficultyLevel = 0;
 const speedIncreasePerLevel = 0.6;
 
-// High Score
+// High score
 let highScore = localStorage.getItem("khueHighScore") || 0;
 document.getElementById("highScore").innerText = "High Score: " + highScore;
 
-// ---------- BUTTON CONTROLS ----------
+// ---------- CONTROLS ----------
 document.getElementById("leftBtn").ontouchstart =
 document.getElementById("leftBtn").onmousedown = () => moveLeft = true;
 
@@ -136,7 +160,7 @@ function spawnVillain() {
     y: -type.size,
     size: type.size,
     img: type.img,
-    speed: 2 + Math.random() * 1.5 + (difficultyLevel * speedIncreasePerLevel)
+    speed: 2 + Math.random() * 1.5 + difficultyLevel * speedIncreasePerLevel
   });
 }
 
@@ -154,12 +178,10 @@ function loop() {
   if (moveLeft) player.x -= player.speed;
   if (moveRight) player.x += player.speed;
 
-  player.x = Math.max(0, Math.min(canvas.width - player.width, player.x)));
+  player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
 
-  // Draw player
   ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
 
-  // Villains
   villains.forEach((v, i) => {
     v.y += v.speed;
     ctx.drawImage(v.img, v.x, v.y, v.size, v.size);
@@ -174,12 +196,11 @@ function loop() {
       endGame();
     }
 
-    // Off-screen
+    // Off screen
     if (v.y > canvas.height) {
       villains.splice(i, 1);
       score++;
 
-      // Increase difficulty every 10 points
       if (score % 10 === 0) {
         difficultyLevel++;
       }
@@ -219,9 +240,6 @@ document.getElementById("restartBtn").onclick = () => {
 
   loop();
 };
-
-// ---------- START ----------
-loop();
 </script>
 
 </body>
